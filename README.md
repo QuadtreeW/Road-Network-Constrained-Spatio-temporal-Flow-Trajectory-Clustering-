@@ -88,6 +88,9 @@ cluster.cluster_traj_init(simplified_traj, graph, eps=5)
 cluster.edge_filter(500)
 cluster.merge_check()
 ```
+![m5](https://github.com/user-attachments/assets/8d65e330-054f-4a2e-b850-96e2f65f4609)
+
+
 
 ### 3. 模式分析
 ```python
@@ -97,9 +100,15 @@ pattern_analysis = PatternAnalysis(pkl_files, graph)
 pattern_analysis.analyze_patterns(target_edge)
 pattern_analysis.visualize_patterns()
 ```
+![dcw_n_5_5](https://github.com/user-attachments/assets/941d7fae-c930-4270-ab1e-59911536b98e)
+![image](https://github.com/user-attachments/assets/32f7cfa9-daac-4f72-be01-3df8c0382bbd)
+
+
 
 ## 性能优化
 - 并行聚类算法提高计算效率
 - 边过滤减少噪声影响
 - 聚类合并优化结果质量
+
+
 
