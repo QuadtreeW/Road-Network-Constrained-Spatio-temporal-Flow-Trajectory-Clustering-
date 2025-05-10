@@ -41,7 +41,7 @@ RoadTimeStream/
 ### 4. 可视化 (Visualization)
 - 聚类结果可视化
 - 演化模式可视化 
-- Sankey图展示时序演化
+- Sankey图展示时序演化，生成json，数据导入echarts生成
 
 
 
