@@ -2,123 +2,139 @@
 
 # RoadTimeStream - 路网时空流模式分析系统
 
-## 项目概述
-RoadTimeStream 是一个基于Python的路网时空流模式分析系统,主要用于分析城市路网中车辆轨迹的时空演化模式。系统集成了地图匹配、轨迹聚类和模式识别等功能模块。
 
-## 系统架构
-系统由以下核心模块构成:
+RoadTimeStream — a Python toolkit for analyzing spatio‑temporal flow patterns on urban road networks. It integrates map matching, edge‑based density clustering, basic evolution pattern analysis, and simple visualization.
 
-```
-RoadTimeStream/
-├── Gmm.py              # 地图匹配模块
-├── FlowClustering.py   # 轨迹聚类模块  
-├── mode.py             # 模式分析模块
-├── test.py             # 测试用例
-```
+Key idea: snap raw GPS tracks to the road graph, convert tracks to sequences of edges, then cluster frequent flows on adjacent edges.
 
-## 主要功能
+## Features
+- Map matching: Leuven Map Matching (HMM) over an in‑memory OSM graph
+- Edge‑based density clustering: DBSCAN‑style expansion on neighboring edges with MinPts
+- Post‑processing:
+  - Small‑area filtering
+  - Merge check for split clusters that share nodes
+  - Basic quality metrics (silhouette score, DCSI)
+- Pattern analysis (create/disappear/split/merge/shrink/expand) and Sankey JSON export for ECharts
+- Quick visualization on top of OSMnx
 
-### 1. 地图匹配 (Map Matching)
-- GPS轨迹点与路网匹配
-- 轨迹简化与过滤
-- 支持时间窗口设置
-
-### 2. 轨迹聚类 (Trajectory Clustering)
-- 基于密度的并行聚类算法
-- 边过滤机制
-- 聚类合并优化
-- 聚类质量评估(轮廓系数等)
-
-### 3. 模式分析 (Pattern Analysis) 
-支持识别以下6种基本演化模式:
-- Create (出现)
-- Disappear (消失) 
-- Split (分裂)
-- Merge (合并)
-- Shrink (收缩)
-- Expand (扩展)
-
-### 4. 可视化 (Visualization)
-- 聚类结果可视化
-- 演化模式可视化 
-- Sankey图展示时序演化，生成json，数据导入echarts生成
-
-
-
-主要依赖包:
-- pandas
-- numpy
-- networkx
-- osmnx
-- geopandas
-- matplotlib
+## Dependencies
+- pandas, numpy
+- networkx, osmnx, geopandas, shapely, pyproj
 - leuvenmapmatching
+- matplotlib
+- scikit‑learn, scipy
+- geopy (used in utilities)
 
-### 数据要求
-- 轨迹数据(CSV格式):
-  - TRACK_ID: 轨迹ID
-  - VEHICLE_ID: 车辆ID
-  - LNG/LAT: 经纬度
-  - GPS_TIME: 时间戳
-- 路网数据: GraphML格式
+Install (example):
+```bash
+pip install pandas numpy networkx osmnx geopandas shapely pyproj leuvenmapmatching matplotlib scikit-learn scipy geopy
+```
 
-## 快速开始
+## Data
+- Trajectories (CSV):
+  - TRACK_ID, VEHICLE_ID, LNG, LAT, GPS_TIME
+- Road network (GraphML):
+  - WGS84 lon/lat GraphML (e.g., exported via OSMnx). Internally re‑projected to EPSG:3857.
 
-### 1. 地图匹配
+## Quickstart
+Python API aligned with the repository code (Gmm.py, FlowClustering.py, mode.py).
+
+Map matching and simplified trajectories:
 ```python
 from Gmm import Graph, Trajectory
 
-# 初始化路网
+# 1) Load road network (GraphML with lon/lat)
 graph = Graph()
 graph.Read_mapXMl("Shenzhen_LL.graphml")
 
-# 轨迹匹配
+# 2) Load trajectories
 traj = Trajectory()
-traj.read_from_csv('data/trajectory.csv')
+traj.read_from_csv("data/trajectory.csv")
+
+# Optional: filter near‑stationary vehicles by latitude delta
 traj.filter_GPS(0.0009556)
+
+# 3) Parallel map matching (each worker loads the graph file)
 simplified_traj = traj.get_simpl_traj_curr("Shenzhen_LL.graphml")
 ```
 
-### 2. 轨迹聚类
+Clustering and post‑processing:
 ```python
 from FlowClustering import ParalClustering
 
 cluster = ParalClustering()
-cluster.cluster_traj_init(simplified_traj, graph, eps=5)
-cluster.edge_filter(500)
+# minpts = minimum number of trajectory segments on the same edge
+clusters = cluster.cluster_traj_init(simplified_traj, graph, minpts=5)
+
+# Optional filters and merge check
+cluster.edge_filter(distance_threshold=500)  # approx meters in EPSG:3857
 cluster.merge_check()
+
+# Metrics / summary
+cluster.calculate_silhouette_score()  # optional, can be slow on large graphs
+cluster.calculate_dcsi()              # optional
+cluster.get_cluster_info()
+
+# Save results
+cluster.save_shp("outputs/clusters.shp")
+# cluster.save_pkl("outputs/clusters.pkl")
 ```
-![m5](https://github.com/user-attachments/assets/8d65e330-054f-4a2e-b850-96e2f65f4609)
 
-
-
-### 3. 模式分析
+Basic pattern analysis and Sankey JSON:
 ```python
 from mode import PatternAnalysis
+from Gmm import Graph
 
-pattern_analysis = PatternAnalysis(pkl_files, graph)
-pattern_analysis.analyze_patterns(target_edge)
-pattern_analysis.visualize_patterns()
+# Suppose you have multiple clustering PKLs over time windows
+pkl_files = [
+
+    # ...
+]
+
+g = Graph()
+g.Read_mapXMl("Shenzhen_LL.graphml")
+
+pa = PatternAnalysis(pkl_files, g)
+target_edge = (9722598873, 9722598874)  # example edge (u, v)
+# pa.analyze_patterns(target_edge)
+# pa.visualize_patterns()
+
+# Export Sankey JSON (nodes named by time)
+json_str = pa.sankey_json(target_edge, start_time="15:05", interval=10)
+# Use the output in ECharts Sankey
 ```
-![dcw_n_5_5](https://github.com/user-attachments/assets/941d7fae-c930-4270-ab1e-59911536b98e)
-![image](https://github.com/user-attachments/assets/32f7cfa9-daac-4f72-be01-3df8c0382bbd)
 
+Quick visualization (optional):
+```python
+# After clustering
+cluster.visualize_clusters(title="Clustered Flows")
+```
 
+## Screenshots
+![Cluster example](https://github.com/user-attachments/assets/8d65e330-054f-4a2e-b850-96e2f65f4609)
+![Pattern example](https://github.com/user-attachments/assets/941d7fae-c930-4270-ab1e-59911536b98e)
+![Sankey example](https://github.com/user-attachments/assets/32f7cfa9-daac-4f72-be01-3df8c0382bbd)
 
-## 性能优化
-- 并行聚类算法提高计算效率
-- 边过滤减少噪声影响
-- 聚类合并优化结果质量
+## Repository Layout
+```
+Gmm.py              # Map loading (OSMnx), in‑memory map for matching, Trajectory I/O and parallel matching
+FlowClustering.py   # Edge‑based clustering, filters, merge check, metrics, export
+mode.py             # Pattern analysis (create/merge/.../disappear), Sankey JSON
+test.py             # Simple tests/examples
+```
 
+## Notes and tips
+- Read_mapXMl expects a GraphML stored in lon/lat; the code re‑projects to EPSG:3857 internally.
+- edge_filter uses bounding‑box spread in projected units (≈ meters in EPSG:3857).
+- get_simpl_traj_curr runs parallel map matching by letting each worker load the GraphML; ensure the path is accessible.
+- For larger data, start with higher minpts (e.g., 7–9) to reduce noise.
 
-
-
-
-
+## License and Usage
 Copyright © 2025 QuadtreeW
 
-本代码仅供学术研究和学习使用。禁止任何形式的商业用途，包括但不限于将本代码用于商业项目、产品、服务或收费系统。
-This code is provided for academic research and educational purposes only.  
-Any form of commercial use is strictly prohibited, including but not limited to use in commercial projects, products, services, or any system involving payment.
+This code is provided for academic research and educational purposes only.
+Any form of commercial use is strictly prohibited, including but not limited to use in commercial projects, products, services, or any paid system.
 
-
+## Acknowledgments
+- OpenStreetMap contributors and OSMnx
+- Leuven Map Matching library
