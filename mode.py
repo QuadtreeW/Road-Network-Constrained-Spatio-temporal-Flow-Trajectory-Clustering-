@@ -480,32 +480,8 @@ class PatternAnalysis:
 # 示例用法
 if __name__ == "__main__":
     # 假设已经有聚类结果的 PKL 文件列表
-    pkl_files = [
-        "25tr/eps5/c1000_2005.pkl",
-        "25tr/eps5/c1000_2015.pkl",
-        "25tr/eps5/c1000_2025.pkl",
-        "25tr/eps5/c1000_2035.pkl",
-        "25tr/eps5/c1000_2045.pkl",
-        "25tr/eps5/c1000_2055.pkl",
-        # "25tr/eps5/c1000_1505.pkl",
-        # "25tr/eps5/c1000_1515.pkl",
-        # "25tr/eps5/c1000_1525.pkl",
-        # "25tr/eps5/c1000_1535.pkl",
-        # "25tr/eps5/c1000_1545.pkl",
-        # "25tr/eps5/c1000_1555.pkl",
-        
+    pkl_files = []
 
-    ]
-
-    # pkl_files = [
-    #     "25tr/clusters1000_2005_curr.pkl",
-    #     "25tr/clusters1000_2015_curr.pkl",
-    #     "25tr/clusters1000_2025_curr.pkl",
-    #     "25tr/clusters1000_2035_curr.pkl",
-    #     "25tr/clusters1000_2045_curr.pkl",
-    #     "25tr/clusters1000_2055_curr.pkl",
-    # ]
-    
     graph = Graph() 
     graph.Read_mapXMl("Shenzhen_LL.graphml") 
 
@@ -521,3 +497,4 @@ if __name__ == "__main__":
     # pattern_analysis.analyze_patterns(target_edge)
     # pattern_analysis.visualize_patterns()
     pattern_analysis.sankey_json(target_edge,"15:05", 10)
+
