@@ -249,40 +249,6 @@ class Trajectory:
         return vehicle_data
     
 
-
-
-    def assign_edge_ids(self, graph):
-        """
-        为每个 GPS 点分配一个边的 ID。
-
-        参数:
-        graph -- 一个 Graph 对象
-        """
-        edge_ids = []
-        for _, row in self.df.iterrows():
-            point = Point(row['x'], row['y'])
-            # 在这里添加地图匹配的代码来确定这个点属于哪条边...
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            # edge_id =  ...代码...
-            # edge_ids.append(edge_id)
-        
-        self.df['EDGE_ID'] = edge_ids
-
     def get_closest_node(self, graph, point):
         """
         返回最接近给定点的节点的 ID。
@@ -339,4 +305,5 @@ class Trajectory:
 
         simplified_df = pd.DataFrame(simplified_data, columns=['TRAJ_ID', 'VEHICLE_ID', 'EDGE_ID', 'START_TIME', 'END_TIME', 'START_NODE', 'END_NODE'])
         self.simplified_df = pd.concat([self.simplified_df, simplified_df])
+
 
