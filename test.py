@@ -21,13 +21,6 @@ if __name__ == '__main__':
     # traj.read_from_csv('25tr/0418_1555_10_1000.csv') 
     # traj.filter_GPS(0.0009556)
 
-    # ----------------------------------------这个没有用-------------------------------------------
-
-    # 设置时间窗口
-    # start_time = pd.Timestamp('2022-01-01 00:00:00')  # 请将这个时间替换为你需要的开始时间
-    # window_size = pd.Timedelta(hours=1)  # 这里设置的时间窗口大小为1小时
-    # traj.set_time_window(start_time, window_size)
-
     # ------------------------------------路网匹配并保存-----------------------------------------------
 
     # simplified_traj = traj.get_simpl_traj_curr("Shenzhen_LL.graphml")
@@ -68,23 +61,6 @@ if __name__ == '__main__':
         step=2,
         edge_filter_threshold=500
     )
-     
-    # ---------------------------------------加载前次聚类并更新--------------------------------------------
-
-
-    # 加载已经保存的聚类结果
-    # with open('25tr/eps5/c1000_2035.pkl', 'rb') as f:
-    #     clusters = pickle.load(f)
-
-    # cluster.update_cluster(simplified_traj, graph,  5,clusters)
-    # cluster.edge_filter(500)
-    # cluster.merge_check()
-    # cluster.save_shp("shp/eps5/wtf.shp")
-    # cluster.update_cluster_with_overlap_optimized(simplified_traj, graph,  10,clusters)
-    # cluster.edge_filter(500)
-    # clusters2 = cluster.merge_check()
-    # with open('25tr/nbrt/clusters1000_2015_nbrt.pkl', 'wb') as f:
-    #     pickle.dump(clusters2, f)
 
     # -------------------------------------结果可视化----------------------------------------------
 
@@ -158,5 +134,6 @@ if __name__ == '__main__':
 
 # # 在图形上添加 minpts 值
 # plt.text(0.5, 0, 'minpts: {}'.format(4), transform=plt.gca().transAxes, color='white')
+
 
 # plt.show()
